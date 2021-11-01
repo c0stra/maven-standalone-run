@@ -12,6 +12,8 @@ import java.util.Map;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
+import static foundation.fluent.api.maven.plugin.RunnerUtils.invoke;
+
 @Mojo(name = "main", requiresProject = false)
 public class MainRunnerMojo extends AbstractStandaloneRunnerMojo {
 
@@ -20,10 +22,6 @@ public class MainRunnerMojo extends AbstractStandaloneRunnerMojo {
     @Parameter(property = "mainClass")
     private String mainClass;
 
-    @Parameter(property = "args")
-    private String args;
-
-
     @Override
     void run(ClassLoader classLoader, Map<String, String> artifactJarMap) throws Throwable {
         String[] commandLineArgs = ArgParser.parse(args);
@@ -31,7 +29,7 @@ public class MainRunnerMojo extends AbstractStandaloneRunnerMojo {
             mainClass = getMainClassFromManifest(artifactJarMap.getOrDefault(artifact, artifact));
         }
         getLog().info("Invoking: " + mainClass + "." + main + " with parameters: " + Arrays.deepToString(commandLineArgs));
-        classLoader.loadClass(mainClass).getMethod(main, String[].class).invoke(null, (Object) commandLineArgs);
+        invoke(classLoader.loadClass(mainClass).getMethod(main, String[].class), null, (Object) commandLineArgs);
     }
 
 

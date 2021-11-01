@@ -2,13 +2,14 @@ package foundation.fluent.api.maven.plugin;
 
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.plugins.annotations.Parameter;
 
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static foundation.fluent.api.maven.plugin.RunnerUtils.invoke;
 
 @Mojo(name = "testng", requiresProject = false)
 public class TestNGRunnerMojo extends AbstractStandaloneRunnerMojo {
@@ -17,17 +18,13 @@ public class TestNGRunnerMojo extends AbstractStandaloneRunnerMojo {
     private static final String privateMain = "privateMain";
     private static final String iTestListenerClassName = "org.testng.ITestListener";
 
-    @Parameter(property = "args")
-    private String args;
-
     @Override
     void run(ClassLoader classLoader, Map<String, String> jarMap) throws Throwable {
         String[] args = augmentArgs(this.args, artifact, jarMap);
-        Class<?> testNGClass = classLoader.loadClass(testNGClassName);
         Class<?> iTestListenerClass = classLoader.loadClass(iTestListenerClassName);
         getLog().info("Invoking TestNG with parameters: " + Arrays.deepToString(args));
-        Object testNG = testNGClass.getMethod(privateMain, String[].class, iTestListenerClass).invoke(null, args, null);
-        handleResult((int) testNG.getClass().getMethod("getStatus").invoke(testNG));
+        Object testNG = invoke(classLoader.loadClass(testNGClassName).getMethod(privateMain, String[].class, iTestListenerClass), null, args, null);
+        handleResult((int) invoke(testNG.getClass().getMethod("getStatus"), testNG));
     }
 
     private void handleResult(int status) throws MojoFailureException {
