@@ -28,30 +28,20 @@
 
 package foundation.fluent.api.maven.plugin;
 
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.Mojo;
 
-import java.net.URLClassLoader;
-import java.util.Collection;
-import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-public abstract class AbstractStandaloneRunnerMojo extends AbstractStandaloneMojoBase {
+import static java.io.File.pathSeparator;
 
-    @Parameter(property = "args")
-    protected String args;
-
-    abstract void run(ClassLoader classLoader, Map<String, String> artifact) throws Throwable;
+@Mojo(name = "class-path", requiresProject = false)
+public class ClassPathMojo extends AbstractStandaloneMojoBase {
 
     @Override
     public void execute() throws MojoExecutionException {
-        ArtifactResolutionResult result = resolveArtifact(artifact);
-        new MojoContext(this, getArtifactJars(result), getLog()).execute(classLoaderFor(result.getArtifacts()));
-    }
-
-    private ClassLoader classLoaderFor(Collection<Artifact> artifacts) {
-        return URLClassLoader.newInstance(classPathUrls(artifacts));
+        System.out.println(Stream.of(classPathUrls(resolveArtifact(artifact).getArtifacts())).map(Object::toString).collect(Collectors.joining(pathSeparator)));
     }
 
 }
