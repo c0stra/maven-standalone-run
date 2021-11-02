@@ -34,6 +34,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.IntPredicate;
 
+/**
+ * As maven cannot simply accept some remainder as free form command line arguments to be passed to it's goal,
+ * the arguments must be passed within a system property (-Dargs=parameters). So the plugins will receive such
+ * parameters within one system property, and they need to be properly escaped and parsed, taking the escaping
+ * into account.
+ *
+ * The parser recognizes space delimited parameters. To allow special characters, it allows double/single quoting
+ * and escaping a single character by backslash.
+ *
+ * The parser uses very simple recursive descent algorithm.
+ */
 public class ArgParser {
 
     private static final String[] emptyString = {};

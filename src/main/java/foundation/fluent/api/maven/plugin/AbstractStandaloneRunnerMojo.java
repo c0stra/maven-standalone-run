@@ -28,13 +28,11 @@
 
 package foundation.fluent.api.maven.plugin;
 
-import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
 
-import java.net.URLClassLoader;
-import java.util.Collection;
 import java.util.Map;
 
 public abstract class AbstractStandaloneRunnerMojo extends AbstractStandaloneMojoBase {
@@ -45,13 +43,9 @@ public abstract class AbstractStandaloneRunnerMojo extends AbstractStandaloneMoj
     abstract void run(ClassLoader classLoader, Map<String, String> artifact) throws Throwable;
 
     @Override
-    public void execute() throws MojoExecutionException {
+    public void execute() throws MojoExecutionException, MojoFailureException {
         ArtifactResolutionResult result = resolveArtifact(artifact);
-        new MojoContext(this, getArtifactJars(result), getLog()).execute(classLoaderFor(result.getArtifacts()));
-    }
-
-    private ClassLoader classLoaderFor(Collection<Artifact> artifacts) {
-        return URLClassLoader.newInstance(classPathUrls(artifacts));
+        new MojoContext(this, getArtifactJars(result)).execute(classLoaderFor(result.getArtifacts()));
     }
 
 }

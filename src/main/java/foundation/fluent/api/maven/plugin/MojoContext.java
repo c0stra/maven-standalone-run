@@ -28,8 +28,9 @@
 
 package foundation.fluent.api.maven.plugin;
 
+import org.apache.maven.plugin.AbstractMojoExecutionException;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.plugin.MojoFailureException;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
@@ -37,23 +38,21 @@ import java.util.concurrent.atomic.AtomicReference;
 public class MojoContext {
 
     private final AbstractStandaloneRunnerMojo mojo;
-    private final AtomicReference<MojoExecutionException> mojoError = new AtomicReference<>();
+    private final AtomicReference<AbstractMojoExecutionException> mojoError = new AtomicReference<>();
     private final Map<String, String> artifactToJarMap;
-    private final Log log;
 
-    public MojoContext(AbstractStandaloneRunnerMojo mojo, Map<String, String> artifactToJarMap, Log log) {
+    public MojoContext(AbstractStandaloneRunnerMojo mojo, Map<String, String> artifactToJarMap) {
         this.mojo = mojo;
         this.artifactToJarMap = artifactToJarMap;
-        this.log = log;
     }
 
-    public void execute(ClassLoader classLoader) throws MojoExecutionException {
+    public void execute(ClassLoader classLoader) throws MojoExecutionException, MojoFailureException {
         Thread thread = new Thread() {
             @Override
             public void run() {
                 try {
                     mojo.run(getContextClassLoader(), artifactToJarMap);
-                } catch (MojoExecutionException e) {
+                } catch (MojoExecutionException | MojoFailureException e) {
                     mojoError.set(e);
                 } catch (Throwable e) {
                     e.printStackTrace();
@@ -69,9 +68,15 @@ public class MojoContext {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        MojoExecutionException throwable = mojoError.get();
+        AbstractMojoExecutionException throwable = mojoError.get();
+        if(throwable instanceof MojoExecutionException) {
+            throw (MojoExecutionException) throwable;
+        }
+        if(throwable instanceof MojoFailureException) {
+            throw (MojoFailureException) throwable;
+        }
         if(throwable != null) {
-            throw throwable;
+            throw new MojoExecutionException("", throwable);
         }
     }
 

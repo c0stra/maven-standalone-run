@@ -42,7 +42,14 @@ import java.util.jar.Manifest;
 
 import static foundation.fluent.api.maven.plugin.RunnerUtils.invoke;
 
-@Mojo(name = "main", requiresProject = false)
+/**
+ * Maven goal to run a main class from a provided maven artifact (or it's dependencies).
+ *
+ * One doesn't have to have any local pom file or sources. This plugin doesn't require a project. It will simply
+ * fetch the artifact jar and all it's dependencies directly from maven repository, and invoke a main method,
+ * either provided explicitly via parameter -DmainClass or defined in the manifest of the jar.
+ */
+@Mojo(name = "main", requiresProject = false, requiresDirectInvocation = true)
 public class MainRunnerMojo extends AbstractStandaloneRunnerMojo {
 
     private static final String main = "main";
@@ -61,13 +68,13 @@ public class MainRunnerMojo extends AbstractStandaloneRunnerMojo {
     }
 
 
-    private String getMainClassFromManifest(String jar) throws IOException, MojoExecutionException {
+    private static String getMainClassFromManifest(String jar) throws IOException, MojoExecutionException {
         JarURLConnection jarURLConnection = (JarURLConnection) new URL("jar:file:" + jar + "!/").openConnection();
         Manifest manifest = jarURLConnection.getManifest();
         Attributes attributes = manifest.getMainAttributes();
         String mainClass = attributes.getValue("Main-Class");
         if(mainClass == null) {
-            throw new MojoExecutionException("Main class not provided, and not defined in manifext of " + jar + ". Try specifying main class explicitly via -DmainClass={your main class}");
+            throw new MojoExecutionException("Main class not provided, and not defined in manifest of " + jar + ". Try specifying main class explicitly via -DmainClass={your main class}");
         }
         return mainClass;
     }

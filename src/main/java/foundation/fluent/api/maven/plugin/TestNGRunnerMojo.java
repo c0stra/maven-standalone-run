@@ -50,8 +50,9 @@ public class TestNGRunnerMojo extends AbstractStandaloneRunnerMojo {
     void run(ClassLoader classLoader, Map<String, String> jarMap) throws Throwable {
         String[] args = augmentArgs(this.args, artifact, jarMap);
         Class<?> iTestListenerClass = classLoader.loadClass(iTestListenerClassName);
+        Object listener = classLoader.loadClass("org.testng.reporters.TextListener").getConstructor().newInstance();
         getLog().info("Invoking TestNG with parameters: " + Arrays.deepToString(args));
-        Object testNG = invoke(classLoader.loadClass(testNGClassName).getMethod(privateMain, String[].class, iTestListenerClass), null, args, null);
+        Object testNG = invoke(classLoader.loadClass(testNGClassName).getMethod(privateMain, String[].class, iTestListenerClass), null, args, listener);
         handleResult((int) invoke(testNG.getClass().getMethod("getStatus"), testNG));
     }
 

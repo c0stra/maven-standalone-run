@@ -35,13 +35,13 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.repository.RepositorySystem;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Collection;
 import java.util.Map;
 
@@ -70,7 +70,7 @@ public abstract class AbstractStandaloneMojoBase extends AbstractMojo {
 
     public ArtifactResolutionResult resolveArtifact(String coordinates) throws MojoExecutionException {
         Artifact mainArtifact = system.createDependencyArtifact(dependency(coordinates));
-        if(mainArtifact.isSnapshot() && !Boolean.getBoolean("allowSnapshot"))
+        if(mainArtifact.isSnapshot() && !allowSnapshot)
             throw new MojoExecutionException("Snapshot artifact not allowed, but provided artifact " + mainArtifact + " is snapshot.");
         getLog().debug("Resolving dependencies for: " + mainArtifact);
         ArtifactResolutionResult result = resolveArtifact(mainArtifact);
@@ -79,7 +79,7 @@ public abstract class AbstractStandaloneMojoBase extends AbstractMojo {
         return result;
     }
 
-    private Dependency dependency(String coordinates) throws MojoExecutionException {
+    private static Dependency dependency(String coordinates) throws MojoExecutionException {
         if(coordinates == null)
             throw new MojoExecutionException("Artifact coordinates not set");
         String[] parts = coordinates.split(":");
@@ -123,6 +123,10 @@ public abstract class AbstractStandaloneMojoBase extends AbstractMojo {
             e.printStackTrace();
         }
         return urls;
+    }
+
+    protected ClassLoader classLoaderFor(Collection<Artifact> artifacts) {
+        return URLClassLoader.newInstance(classPathUrls(artifacts));
     }
 
 }
