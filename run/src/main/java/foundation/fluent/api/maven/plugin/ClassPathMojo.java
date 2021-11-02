@@ -31,6 +31,7 @@ package foundation.fluent.api.maven.plugin;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
 
+import java.net.URL;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -41,7 +42,7 @@ public class ClassPathMojo extends AbstractStandaloneMojoBase {
 
     @Override
     public void execute() throws MojoExecutionException {
-        System.out.println(Stream.of(classPathUrls(resolveArtifact(artifact).getArtifacts())).map(Object::toString).collect(Collectors.joining(pathSeparator)));
+        System.out.println(Stream.of(classPathUrls(resolveArtifact(artifact).getArtifacts())).map(URL::getPath).collect(Collectors.joining(pathSeparator)));
     }
 
 }
