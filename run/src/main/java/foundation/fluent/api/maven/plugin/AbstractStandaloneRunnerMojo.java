@@ -55,7 +55,7 @@ public abstract class AbstractStandaloneRunnerMojo extends AbstractStandaloneMoj
     protected int run(ClassLoader classLoader, String mainClass, String... commandLineArgs) throws Throwable {
         getLog().info("Invoking: " + mainClass + "." + main + " with parameters: " + Arrays.deepToString(commandLineArgs));
         SecurityManager securityManager = System.getSecurityManager();
-        System.setSecurityManager(new ExitCodeExtractor());
+        System.setSecurityManager(new ExitCodeExtractor(securityManager));
         try {
             classLoader.loadClass(mainClass).getMethod(main, String[].class).invoke(null, (Object) commandLineArgs);
         } catch (ExitCodeExtractor.ExitCodeException e) {
