@@ -31,29 +31,19 @@ package foundation.fluent.api.maven.plugin;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static foundation.fluent.api.maven.plugin.RunnerUtils.invoke;
-
 @Mojo(name = "testng", requiresProject = false)
 public class TestNGRunnerMojo extends AbstractStandaloneRunnerMojo {
 
     private static final String testNGClassName = "org.testng.TestNG";
-    private static final String privateMain = "privateMain";
-    private static final String iTestListenerClassName = "org.testng.ITestListener";
 
     @Override
     void run(ClassLoader classLoader, Map<String, String> jarMap) throws Throwable {
-        String[] args = augmentArgs(this.args, artifact, jarMap);
-        Class<?> iTestListenerClass = classLoader.loadClass(iTestListenerClassName);
-        Object listener = null; //classLoader.loadClass("org.testng.reporters.TextListener").getConstructor().newInstance();
-        getLog().info("Invoking TestNG with parameters: " + Arrays.deepToString(args));
-        Object testNG = invoke(classLoader.loadClass(testNGClassName).getMethod(privateMain, String[].class, iTestListenerClass), null, args, listener);
-        handleResult((int) invoke(testNG.getClass().getMethod("getStatus"), testNG));
+        handleResult(run(classLoader, testNGClassName, augmentArgs(this.args, artifact, jarMap)));
     }
 
     private void handleResult(int status) throws MojoFailureException {

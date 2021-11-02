@@ -29,18 +29,18 @@
 package foundation.fluent.api.maven.plugin;
 
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
 import java.io.IOException;
 import java.net.JarURLConnection;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
-import static foundation.fluent.api.maven.plugin.RunnerUtils.invoke;
+import static foundation.fluent.api.maven.plugin.ArgParser.parse;
 
 /**
  * Maven goal to run a main class from a provided maven artifact (or it's dependencies).
@@ -52,19 +52,17 @@ import static foundation.fluent.api.maven.plugin.RunnerUtils.invoke;
 @Mojo(name = "main", requiresProject = false, requiresDirectInvocation = true)
 public class MainRunnerMojo extends AbstractStandaloneRunnerMojo {
 
-    private static final String main = "main";
-
     @Parameter(property = "mainClass")
     private String mainClass;
 
     @Override
     void run(ClassLoader classLoader, Map<String, String> artifactJarMap) throws Throwable {
-        String[] commandLineArgs = ArgParser.parse(args);
         if(mainClass == null) {
             mainClass = getMainClassFromManifest(artifactJarMap.getOrDefault(artifact, artifact));
         }
-        getLog().info("Invoking: " + mainClass + "." + main + " with parameters: " + Arrays.deepToString(commandLineArgs));
-        invoke(classLoader.loadClass(mainClass).getMethod(main, String[].class), null, (Object) commandLineArgs);
+        int exitCode = run(classLoader, mainClass, parse(args));
+        if(exitCode != 0)
+            throw new MojoFailureException(mainClass + "." + main + " exited with exit code " + exitCode);
     }
 
 

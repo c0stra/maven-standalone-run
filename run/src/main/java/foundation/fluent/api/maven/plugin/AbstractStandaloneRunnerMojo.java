@@ -33,9 +33,13 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.Map;
 
 public abstract class AbstractStandaloneRunnerMojo extends AbstractStandaloneMojoBase {
+
+    public static final String main = "main";
 
     @Parameter(property = "args")
     protected String args;
@@ -48,4 +52,22 @@ public abstract class AbstractStandaloneRunnerMojo extends AbstractStandaloneMoj
         new MojoContext(this, getArtifactJars(result)).execute(classLoaderFor(result.getArtifacts()));
     }
 
+    protected int run(ClassLoader classLoader, String mainClass, String... commandLineArgs) throws Throwable {
+        getLog().info("Invoking: " + mainClass + "." + main + " with parameters: " + Arrays.deepToString(commandLineArgs));
+        SecurityManager securityManager = System.getSecurityManager();
+        System.setSecurityManager(new ExitCodeExtractor());
+        try {
+            classLoader.loadClass(mainClass).getMethod(main, String[].class).invoke(null, (Object) commandLineArgs);
+        } catch (ExitCodeExtractor.ExitCodeException e) {
+            return e.getStatus();
+        } catch (InvocationTargetException e) {
+            if(e.getTargetException() instanceof ExitCodeExtractor.ExitCodeException) {
+                return ((ExitCodeExtractor.ExitCodeException) e.getTargetException()).getStatus();
+            }
+            throw e.getTargetException();
+        } finally {
+            System.setSecurityManager(securityManager);
+        }
+        return 0;
+    }
 }

@@ -34,7 +34,7 @@ public class TestNGTest {
 
     @Test
     public void test() {
-
+        throw new AssertionError("Fail");
     }
 
 }
