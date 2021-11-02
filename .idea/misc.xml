@@ -5,6 +5,9 @@
     <option name="originalFiles">
       <list>
         <option value="$PROJECT_DIR$/pom.xml" />
+        <option value="$PROJECT_DIR$/sample-main-artifact/pom.xml" />
+        <option value="$PROJECT_DIR$/run/pom.xml" />
+        <option value="$PROJECT_DIR$/sample-testng-artifact/pom.xml" />
       </list>
     </option>
   </component>
