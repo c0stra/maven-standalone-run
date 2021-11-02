@@ -60,7 +60,7 @@ public class MainRunnerMojo extends AbstractStandaloneRunnerMojo {
         if(mainClass == null) {
             mainClass = getMainClassFromManifest(artifactJarMap.getOrDefault(artifact, artifact));
         }
-        int exitCode = run(classLoader, mainClass, parse(args));
+        int exitCode = run(classLoader, mainClass, args());
         if(exitCode != 0)
             throw new MojoFailureException(mainClass + "." + main + " exited with exit code " + exitCode);
     }

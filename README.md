@@ -44,6 +44,7 @@ mvn foundation.fluent.api:run:main -Dartifact=foundation.fluent.api:sample-main-
 | `artifact` | Main artifact coordinates | `-Dartifact=com.example:exampleArtifactId:version` |
 | `mainClass` | Explicitly provided main class. It may not be needed, if the main class is defined in jar manifest. | `-DmainClass=com.example.Main` |
 | `args` | Optional main method arguments (a.k.a command line arguments). | `"-Dargs=A B"`  |
+| `argFile` | Optional file with main method arguments, one per line. | `-DargFile=args.txt` |
 | `allowSnapshot` | Allow snapshot artifact to be used. By default it is not allowed. | `-DallowSnapshot=true` |
 
 ## Goal: `class-path`
@@ -77,6 +78,7 @@ or prepared in dedicated test environment.
 |-------|---------|------|
 | `artifact` | Main artifact coordinates | `-Dartifact=com.example:exampleArtifactId:version` |
 | `args` | Optional main method arguments (a.k.a command line arguments). | `"-Dargs=A B"`  |
+| `argFile` | Optional file with main method arguments, one per line. | `-DargFile=args.txt` |
 | `allowSnapshot` | Allow snapshot artifact to be used. By default it is not allowed. | `-DallowSnapshot=true` |
 
 ### Parameter handling

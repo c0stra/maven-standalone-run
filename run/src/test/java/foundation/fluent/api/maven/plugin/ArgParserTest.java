@@ -56,7 +56,7 @@ public class ArgParserTest {
 
     @Test(dataProvider = "data")
     public void parsingTest(Parameters parameters) {
-        Assert.assertEquals(ArgParser.parse(parameters.commandLine), parameters.expectedArgs);
+        Assert.assertEquals(ArgParser.parse(parameters.commandLine).toArray(String[]::new), parameters.expectedArgs);
     }
 
     private Def parsingOf(String commandLine) {

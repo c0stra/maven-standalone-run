@@ -43,7 +43,7 @@ public class TestNGRunnerMojo extends AbstractStandaloneRunnerMojo {
 
     @Override
     void run(ClassLoader classLoader, Map<String, String> jarMap) throws Throwable {
-        handleResult(run(classLoader, testNGClassName, augmentArgs(this.args, artifact, jarMap)));
+        handleResult(run(classLoader, testNGClassName, augmentArgs(artifact, jarMap)));
     }
 
     private void handleResult(int status) throws MojoFailureException {
@@ -56,8 +56,8 @@ public class TestNGRunnerMojo extends AbstractStandaloneRunnerMojo {
         }
     }
 
-    private String[] augmentArgs(String commandLineArgs, String artifact, Map<String, String> jarMap) {
-        String[] args = ArgParser.parse(commandLineArgs);
+    private String[] augmentArgs(String artifact, Map<String, String> jarMap) {
+        String[] args = args();
         Set<String> argsSet = Stream.of(args).collect(Collectors.toSet());
         if((argsSet.contains("-xmlpathinjar") && !argsSet.contains("-testjar")) || argsSet.isEmpty()) {
             args = Stream.concat(Stream.of(args), Stream.of("-testjar", artifact)).toArray(String[]::new);

@@ -33,9 +33,17 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Map;
+
+import static foundation.fluent.api.maven.plugin.ArgParser.parse;
+import static java.util.stream.Stream.concat;
+import static java.util.stream.Stream.empty;
 
 public abstract class AbstractStandaloneRunnerMojo extends AbstractStandaloneMojoBase {
 
@@ -44,12 +52,24 @@ public abstract class AbstractStandaloneRunnerMojo extends AbstractStandaloneMoj
     @Parameter(property = "args")
     protected String args;
 
+    @Parameter(property = "argFile")
+    protected String argFile;
+
     abstract void run(ClassLoader classLoader, Map<String, String> artifact) throws Throwable;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         ArtifactResolutionResult result = resolveArtifact(artifact);
         new MojoContext(this, getArtifactJars(result)).execute(classLoaderFor(result.getArtifacts()));
+    }
+
+    protected String[] args() {
+        try {
+            return concat(argFile == null ? empty() : Files.lines(Paths.get(argFile)), parse(args)).toArray(String[]::new);
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new UncheckedIOException(e);
+        }
     }
 
     protected int run(ClassLoader classLoader, String mainClass, String... commandLineArgs) throws Throwable {
@@ -70,4 +90,5 @@ public abstract class AbstractStandaloneRunnerMojo extends AbstractStandaloneMoj
         }
         return 0;
     }
+
 }

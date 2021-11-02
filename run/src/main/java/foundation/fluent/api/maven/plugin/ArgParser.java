@@ -33,6 +33,7 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.IntPredicate;
+import java.util.stream.Stream;
 
 /**
  * As maven cannot simply accept some remainder as free form command line arguments to be passed to it's goal,
@@ -51,9 +52,9 @@ public class ArgParser {
 
     private ArgParser() {}
 
-    public static String[] parse(String commandLine) {
+    public static Stream<String> parse(String commandLine) {
         if(commandLine == null)
-            return emptyString;
+            return Stream.empty();
         List<StringBuilder> result = new ArrayList<>();
         StringReader reader = new StringReader(commandLine);
         try {
@@ -61,7 +62,7 @@ public class ArgParser {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return result.stream().map(Object::toString).toArray(String[]::new);
+        return result.stream().map(Object::toString);
     }
 
 
