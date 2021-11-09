@@ -44,7 +44,9 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collection;
 import java.util.Map;
+import java.util.stream.Stream;
 
+import static foundation.fluent.api.maven.plugin.JarKey.jar;
 import static java.util.stream.Collectors.toMap;
 
 public abstract class AbstractStandaloneMojoBase extends AbstractMojo {
@@ -62,10 +64,27 @@ public abstract class AbstractStandaloneMojoBase extends AbstractMojo {
     boolean allowSnapshot;
 
     public static Map<String, String> getArtifactJars(ArtifactResolutionResult artifact) {
-        return artifact.getArtifacts().stream().collect(toMap(
-                a -> a.getGroupId() + ":" + a.getArtifactId() + ":" + a.getVersion(),
-                a -> a.getFile().getAbsolutePath()
-        ));
+        return artifact.getArtifacts().stream()
+                .flatMap(AbstractStandaloneMojoBase::keys)
+                .collect(toMap(JarKey::getKey, JarKey::getFile, (prev, next) -> prev));
+    }
+
+    private static Stream<JarKey> keys(Artifact artifact) {
+        String absolutePath = artifact.getFile().getAbsolutePath();
+        String groupId = artifact.getGroupId();
+        String artifactId = artifact.getArtifactId();
+        String version = artifact.getVersion();
+        String type = artifact.getType();
+        String classifier = artifact.getClassifier();
+        return classifier == null ? Stream.of(
+                jar(absolutePath, groupId, artifactId, version, type),
+                jar(absolutePath, groupId, artifactId, version),
+                jar(absolutePath, groupId, artifactId),
+                jar(absolutePath, groupId, artifactId, type)
+        ) : Stream.of(
+                jar(absolutePath, groupId, artifactId, classifier, version, type),
+                jar(absolutePath, groupId, artifactId, classifier, type)
+        );
     }
 
     public ArtifactResolutionResult resolveArtifact(String coordinates) throws MojoExecutionException {
