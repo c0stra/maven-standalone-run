@@ -32,7 +32,7 @@
 
     <groupId>foundation.fluent.api</groupId>
     <artifactId>run</artifactId>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.1</version>
     <packaging>maven-plugin</packaging>
     <name>Maven standalone runner plugin</name>
     <description>
@@ -66,7 +66,7 @@
         <connection>scm:git:git://github.com/c0stra/maven-standalone-runner.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/c0stra/maven-standalone-runner.git</developerConnection>
         <url>https://github.com/c0stra/maven-standalone-runner</url>
-        <tag>HEAD</tag>
+        <tag>run-1.1</tag>
     </scm>
 
     <distributionManagement>
