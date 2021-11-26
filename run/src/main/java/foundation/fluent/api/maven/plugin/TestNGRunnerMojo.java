@@ -64,7 +64,7 @@ public class TestNGRunnerMojo extends AbstractStandaloneRunnerMojo {
         }
         for(int i = 0; i < args.length - 1; i++) {
             if("-testjar".equals(args[i])) {
-                args[i+1] = jarMap.getOrDefault(args[i+1], args[i+1]);
+                args[i+1] = resolve(jarMap, args[i+1]);
             }
         }
         return args;

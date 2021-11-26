@@ -42,6 +42,7 @@ import java.util.Arrays;
 import java.util.Map;
 
 import static foundation.fluent.api.maven.plugin.ArgParser.parse;
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Stream.concat;
 import static java.util.stream.Stream.empty;
 
@@ -60,7 +61,9 @@ public abstract class AbstractStandaloneRunnerMojo extends AbstractStandaloneMoj
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         ArtifactResolutionResult result = resolveArtifact(artifact);
-        new MojoContext(this, getArtifactJars(result)).execute(classLoaderFor(result.getArtifacts()));
+        Map<String, String> artifactJars = getArtifactJars(result);
+        getLog().debug("Artifact to jar mapping:\n" + artifactJars.entrySet().stream().map(e -> e.getKey() + " -> " + e.getValue()).collect(joining("\n")));
+        new MojoContext(this, artifactJars).execute(classLoaderFor(result.getArtifacts()));
     }
 
     protected String[] args() {
@@ -89,6 +92,13 @@ public abstract class AbstractStandaloneRunnerMojo extends AbstractStandaloneMoj
             System.setSecurityManager(securityManager);
         }
         return 0;
+    }
+
+    protected String resolve(Map<String, String> artifactJars, String artifact) {
+        getLog().debug("Resolving jar for: " + artifact);
+        String jar = artifactJars.getOrDefault(artifact, artifact);
+        getLog().debug(artifact + " -> " + jar);
+        return jar;
     }
 
 }
