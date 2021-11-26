@@ -4,7 +4,7 @@
 
 # Maven standalone runner
 
-_! Not yet released !_
+![Released version](https://img.shields.io/maven-central/v/foundation.fluent.api/run.svg)
 
 Maven is used heavily for java project management with main support for
 development, unit testing and deployment automation.
