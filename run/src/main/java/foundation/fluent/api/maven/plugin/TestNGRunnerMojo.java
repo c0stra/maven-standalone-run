@@ -33,8 +33,11 @@ import org.apache.maven.plugins.annotations.Mojo;
 
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toSet;
+import static java.util.stream.Stream.concat;
 
 @Mojo(name = "testng", requiresProject = false)
 public class TestNGRunnerMojo extends AbstractStandaloneRunnerMojo {
@@ -57,11 +60,7 @@ public class TestNGRunnerMojo extends AbstractStandaloneRunnerMojo {
     }
 
     private String[] augmentArgs(String artifact, Map<String, String> jarMap) {
-        String[] args = args();
-        Set<String> argsSet = Stream.of(args).collect(Collectors.toSet());
-        if((argsSet.contains("-xmlpathinjar") && !argsSet.contains("-testjar")) || argsSet.isEmpty()) {
-            args = Stream.concat(Stream.of(args), Stream.of("-testjar", artifact)).toArray(String[]::new);
-        }
+        String[] args = defaultArgs(args(), artifact);
         for(int i = 0; i < args.length - 1; i++) {
             if("-testjar".equals(args[i])) {
                 args[i+1] = resolve(jarMap, args[i+1]);
@@ -70,4 +69,119 @@ public class TestNGRunnerMojo extends AbstractStandaloneRunnerMojo {
         return args;
     }
 
+    static String[] defaultArgs(String[] args, String artifact) {
+        return needsTestJar(args) ? concat(Stream.of(args), Stream.of("-testjar", withoutVersion(artifact))).toArray(String[]::new) : args;
+    }
+
+    private static final Set<String> scope = Stream.of(
+            "-testclass",
+            "-methods"
+    ).collect(toSet());
+
+    private static boolean needsTestJar(String[] args) {
+        int nonIgnored = 0;
+        for(int i = 0; i < args.length; i++) {
+            if(scope.contains(args[i]) || !args[i].startsWith("-")) {
+                nonIgnored++;
+            } else {
+                i++;
+            }
+        }
+        Set<String> argsSet = Stream.of(args).collect(toSet());
+        return !argsSet.contains("-testjar") && (argsSet.contains("-xmlpathinjar") || nonIgnored == 0);
+    }
+
+    private static String withoutVersion(String artifact) {
+        return Stream.of(artifact.split(":")).limit(2).collect(joining(":"));
+    }
+
+    /*
+Example of TestNG usage:
+
+You need to specify at least one testng.xml, one class or one method
+Usage: <main class> [options] The XML suite files to run
+  Options:
+    -alwaysrunlisteners
+      Should MethodInvocation Listeners be run even for skipped methods
+      Default: true
+    -configfailurepolicy
+      Configuration failure policy (skip or continue)
+    -d
+      Output directory
+    -dataproviderthreadcount
+      Number of threads to use when running data providers
+    -dependencyinjectorfactory
+      The dependency injector factory implementation that TestNG should use.
+    -excludegroups
+      Comma-separated list of group names to  exclude
+    -failwheneverythingskipped
+      Should TestNG fail execution if all tests were skipped and nothing was
+      run.
+      Default: false
+    -groups
+      Comma-separated list of group names to be run
+    -junit
+      JUnit mode
+      Default: false
+    -listener
+      List of .class files or list of class names implementing ITestListener
+      or ISuiteListener
+    -methods
+      Comma separated of test methods
+      Default: []
+    -methodselectors
+      List of .class files or list of class names implementing IMethodSelector
+    -mixed
+      Mixed mode - autodetect the type of current test and run it with
+      appropriate runner
+      Default: false
+    -objectfactory
+      List of .class files or list of class names implementing
+      ITestRunnerFactory
+    -overrideincludedmethods
+      Comma separated fully qualified class names of listeners that should be
+      skipped from being wired in via Service Loaders.
+      Default: false
+    -parallel
+      Parallel mode (methods, tests or classes)
+      Possible Values: [tests, methods, classes, instances, none]
+    -port
+      The port
+    -reporter
+      Extended configuration for custom report listener
+    -spilistenerstoskip
+      Comma separated fully qualified class names of listeners that should be
+      skipped from being wired in via Service Loaders.
+      Default: <empty string>
+    -suitename
+      Default name of test suite, if not specified in suite definition file or
+      source code
+    -suitethreadpoolsize
+      Size of the thread pool to use to run suites
+      Default: 1
+    -testclass
+      The list of test classes
+    -testjar
+      A jar file containing the tests
+    -testname
+      Default name of test, if not specified in suitedefinition file or source
+      code
+    -testnames
+      The list of test names to run
+    -testrunfactory, -testRunFactory
+      The factory used to create tests
+    -threadcount
+      Number of threads to use when running tests in parallel
+    -threadpoolfactoryclass
+      The threadpool executor factory implementation that TestNG should use.
+    -usedefaultlisteners
+      Whether to use the default listeners
+      Default: true
+    -log, -verbose
+      Level of verbosity
+    -xmlpathinjar
+      The full path to the xml file inside the jar file (only valid if
+      -testjar was specified)
+      Default: testng.xml
+     */
 }
